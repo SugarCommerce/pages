@@ -215,6 +215,44 @@ final class PagesTest extends TestCase {
 		$this->assertSame( [ 'shop_checkout' => 'Checkout' ], $this->states( $pages->id( 'checkout' ) ) );
 	}
 
+	public function test_a_page_is_still_labelled_on_a_later_request(): void {
+		// Made once, from a setup screen's button, and not registered again.
+		$id = Pages::get( 'shop' )->add( 'checkout', [ 'title' => 'Checkout', 'label' => 'Shop checkout' ] );
+
+		// The next request: no hooks, no sets in memory; options and posts stay.
+		$GLOBALS['pg']['hooks'] = [];
+		Pages::reset();
+
+		Pages::get( 'shop' );
+
+		$this->assertSame( [ 'shop_checkout' => 'Shop checkout' ], $this->states( $id ) );
+	}
+
+	public function test_a_registered_label_wins_over_the_remembered_one(): void {
+		$id = Pages::register( 'shop', [ 'checkout' => [ 'title' => 'Checkout' ] ] )->id( 'checkout' );
+
+		$GLOBALS['pg']['hooks'] = [];
+		Pages::reset();
+
+		Pages::register( 'shop', [ 'checkout' => [ 'title' => 'Caisse' ] ] );
+
+		$this->assertSame( [ 'shop_checkout' => 'Caisse' ], $this->states( $id ) );
+	}
+
+	public function test_a_forgotten_page_is_no_longer_labelled_later(): void {
+		$pages = Pages::register( 'shop', [ 'checkout' => [ 'title' => 'Checkout' ] ] );
+		$id    = $pages->id( 'checkout' );
+
+		$pages->remove( 'checkout' );
+		update_option( 'shop_checkout_page', $id );
+
+		$GLOBALS['pg']['hooks'] = [];
+		Pages::reset();
+		Pages::get( 'shop' );
+
+		$this->assertSame( [], $this->states( $id ) );
+	}
+
 	public function test_another_page_is_not_labelled_and_states_are_kept(): void {
 		Pages::register( 'shop', [ 'checkout' => [ 'title' => 'Checkout' ] ] );
 

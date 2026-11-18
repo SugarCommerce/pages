@@ -93,6 +93,16 @@ nobody can reach.
 Each prefix is its own set, so two plugins keep their pages apart, and a
 page's id is stored in the option `{prefix}_{key}_page`.
 
+## Labels
+
+Each page gets a post state in Pages: its `label`, or its title. The label is
+also remembered in the option `{prefix}_page_labels`, so a page made once from
+a setup screen's button stays labelled on later requests, as long as the set
+exists on the request (`Pages::get( 'myshop' )` is enough). Registering on
+every request is still best: the registered label wins, translated for
+whoever is looking. With ids kept in your own settings nothing is remembered,
+since the ids can only be read through the `get` you register.
+
 ## Making them later
 
 Registered with `create` off, missing pages wait. Labels and lookups work
@@ -158,7 +168,7 @@ Stored ids keep their option names.
 | `Pages::set_prefix( 'myshop' )` then `Pages::add( $key, $config )` | `Pages::get( 'myshop' )->add( $key, $config )` |
 | `Pages::id()`, `::url()`, `::ids()`, `::remove()`, `::all()`, `::post_states()` | the same names, on the set |
 | option `{prefix}_{key}_page` | unchanged |
-| post state key `{prefix}_{key}` | unchanged |
+| post state key `{prefix}_{key}` | unchanged; now also shown on requests where the page was not added (labels kept in `{prefix}_page_labels`) |
 | — | `create` off and `create()`, `missing()`, `is()`, `key()`, `get`/`set`/`delete` stores, `{prefix}_page_args`, `{prefix}_page_created` |
 
 ## Requirements
