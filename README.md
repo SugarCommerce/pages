@@ -152,24 +152,12 @@ Named from the prefix, so two plugins never hear each other's:
 | `{prefix}_page_args` | filter | the `wp_insert_post()` arguments for a page about to be made, given its key and configuration |
 | `{prefix}_page_created` | action | a page was made, given its key and id |
 
-## Moving from arraypress/wp-*
+## Security
 
-From `arraypress/wp-register-pages` (`ArrayPress\RegisterPages`). The global
-functions are gone -- a library bundled into several plugins must not declare
-any -- and the one process-wide prefix is now one set of pages per prefix.
-Stored ids keep their option names.
-
-| Old | New |
-|-----|-----|
-| `register_pages( 'myshop', $pages )` | `Pages::register( 'myshop', $pages )` (returns the set, not the ids: `->ids()`) |
-| `get_registered_page_id( $key )` | `Pages::get( 'myshop' )->id( $key )` |
-| `get_registered_page_url( $key )` | `Pages::get( 'myshop' )->url( $key )` |
-| `unregister_page( $key, $delete )` | `Pages::get( 'myshop' )->remove( $key, $delete )` |
-| `Pages::set_prefix( 'myshop' )` then `Pages::add( $key, $config )` | `Pages::get( 'myshop' )->add( $key, $config )` |
-| `Pages::id()`, `::url()`, `::ids()`, `::remove()`, `::all()`, `::post_states()` | the same names, on the set |
-| option `{prefix}_{key}_page` | unchanged |
-| post state key `{prefix}_{key}` | unchanged; now also shown on requests where the page was not added (labels kept in `{prefix}_page_labels`) |
-| — | `create` off and `create()`, `missing()`, `is()`, `key()`, `get`/`set`/`delete` stores, `{prefix}_page_args`, `{prefix}_page_created` |
+* Trusts a stored id only while it is still a page and not in the trash, so a reused or tampered id never sends somebody to another post
+* Escapes the label each page wears in the Pages list
+* Never deletes a page on its own: removing one forgets it unless you ask for the trash
+* Takes nothing from the request -- every page, slug and label comes from your code -- and names its hooks and options from your prefix
 
 ## Requirements
 
